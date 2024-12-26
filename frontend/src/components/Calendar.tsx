@@ -7,6 +7,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import 'react-calendar/dist/Calendar.css';
 import styled from 'styled-components';
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 
 const CalendarContainer = styled.div`
   display: flex;
@@ -14,12 +16,15 @@ const CalendarContainer = styled.div`
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  align-items: flex-start;
 
   .react-calendar {
     width: 350px;
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+    margin-bottom: 2rem;
 
     .has-entry {
       background-color: #e6f3ff;
@@ -41,8 +46,8 @@ const CalendarContainer = styled.div`
 const Header = styled.div`
   display: flex;
   justify-content: flex-end;
-  padding: 1rem 2rem;
-  background: white;
+  padding: 1rem;
+  background: #4869b0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
@@ -53,7 +58,7 @@ const ButtonGroup = styled.div`
 
 const Button = styled.button`
   padding: 0.5rem 1rem;
-  background: #007bff;
+  background: #7eb3ff;
   color: white;
   border: none;
   border-radius: 4px;
@@ -61,21 +66,32 @@ const Button = styled.button`
   font-size: 1rem;
 
   &:hover {
-    background: #0056b3;
+    background: #6a9fee;
   }
 
   &.logout {
-    background: #dc3545;
+    background: #ff5252;
     
     &:hover {
-      background: #c82333;
+      background: #ff3838;
     }
   }
 `;
 
 const PageContainer = styled.div`
   min-height: 100vh;
-  background: #f8f9fa;
+  background: #d4e5ff;
+`;
+
+const EntryContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
 `;
 
 interface Entry {
@@ -94,40 +110,45 @@ const getFormattedDate = (date: Date) => {
 };
 
 const DiaryCalendar: React.FC = () => {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Value>(null);
   const [currentEntry, setCurrentEntry] = useState<Entry | null>(null);
   const [loading, setLoading] = useState(false);
   const [entries, setEntries] = useState<Record<string, Entry>>({});
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  // Fetch all entries when component mounts
-  useEffect(() => {
-    const fetchAllEntries = async () => {
-      try {
-        const response = await diaryApi.getEntries();
-        const entriesMap: Record<string, Entry> = {};
-        response.data.forEach((entry: Entry) => {
-          // Ensure we're using the correct date format when storing entries
-          const entryDate = new Date(entry.date);
-          const adjustedDate = new Date(
-            entryDate.getFullYear(),
-            entryDate.getMonth(),
-            entryDate.getDate() + 1
-          );
-          const formattedDate = adjustedDate.toISOString().split('T')[0];
-          entriesMap[formattedDate] = entry;
-        });
-        setEntries(entriesMap);
-      } catch (error) {
-        console.error('Failed to fetch entries:', error);
-      }
-    };
+  const fetchAllEntries = async () => {
+    try {
+      const response = await diaryApi.getEntries();
+      const entriesMap: Record<string, Entry> = {};
+      response.data.forEach((entry: Entry) => {
+        // Ensure we're using the correct date format when storing entries
+        const entryDate = new Date(entry.date);
+        const adjustedDate = new Date(
+          entryDate.getFullYear(),
+          entryDate.getMonth(),
+          entryDate.getDate() + 1
+        );
+        const formattedDate = adjustedDate.toISOString().split('T')[0];
+        entriesMap[formattedDate] = entry;
+      });
+      setEntries(entriesMap);
+    } catch (error) {
+      console.error('Failed to fetch entries:', error);
+    }
+  };
 
+  // Move fetchAllEntries outside useEffect and reuse it
+  useEffect(() => {
     fetchAllEntries();
   }, []);
 
-  const fetchEntry = async (date: Date) => {
+  const fetchEntry = async (date: Value) => {
+    if (!date || !(date instanceof Date)) {
+      setCurrentEntry(null);
+      return;
+    }
+
     // Adjust the date for fetching
     const adjustedDate = new Date(
       date.getFullYear(),
@@ -164,11 +185,16 @@ const DiaryCalendar: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchEntry(selectedDate);
+    if (selectedDate instanceof Date) {
+      fetchEntry(selectedDate);
+    }
   }, [selectedDate]);
 
   const handleDateClick = (value: Value) => {
-    if (value instanceof Date) {
+    if (value instanceof Date && selectedDate instanceof Date && 
+        isSameDay(value, selectedDate)) {
+      setSelectedDate(null);
+    } else {
       setSelectedDate(value);
     }
   };
@@ -181,24 +207,19 @@ const DiaryCalendar: React.FC = () => {
       const localDate = new Date(
         date.getFullYear(),
         date.getMonth(),
-        date.getDate() +1  // Add one day to compensate for timezone shift
+        date.getDate() + 1  // Add one day to compensate for timezone shift
       );
       
       // Format as YYYY-MM-DD
       const formattedDate = localDate.toISOString().split('T')[0];
       
-      console.log('Calendar - Selected date:', date);
-      console.log('Calendar - Adjusted local date:', localDate);
-      console.log('Calendar - Formatted date:', formattedDate);
-      
       const response = await diaryApi.createEntry(formattedDate, content);
       
       // Update both current entry and entries cache
       setCurrentEntry(response.data);
-      setEntries(prev => ({
-        ...prev,
-        [formattedDate]: response.data
-      }));
+      
+      // Update entries state
+      await fetchAllEntries();
       
     } catch (error) {
       console.error('Failed to save entry:', error);
@@ -232,6 +253,37 @@ const DiaryCalendar: React.FC = () => {
     return entries[formattedDate] ? <div className="entry-dot"></div> : null;
   };
 
+  const formatDate = (dateStr: string): string => {
+    const date = new Date(dateStr);
+    return date.toISOString().split('T')[0];
+  };
+
+  const handleDeleteEntry = async (date: string) => {
+    confirmAlert({
+      title: 'Confirm Deletion',
+      message: 'Are you sure you want to delete this entry?',
+      buttons: [
+        {
+          label: 'Yes',
+          onClick: async () => {
+            try {
+              await diaryApi.deleteEntry(date);
+              setCurrentEntry(null);
+              // Refresh all entries to update the calendar
+              await fetchAllEntries();
+            } catch (error) {
+              console.error('Error deleting entry:', error);
+            }
+          }
+        },
+        {
+          label: 'No',
+          onClick: () => {}
+        }
+      ]
+    });
+  };
+
   return (
     <PageContainer>
       <Header>
@@ -251,12 +303,21 @@ const DiaryCalendar: React.FC = () => {
           tileClassName={tileClassName}
           tileContent={tileContent}
         />
-        <DiaryEntry 
-          date={selectedDate}
-          entry={currentEntry}
-          onSave={handleSaveEntry}
-          loading={loading}
-        />
+        {selectedDate && (
+          <EntryContainer>
+            <DiaryEntry 
+              date={selectedDate instanceof Date ? selectedDate : new Date()}
+              entry={currentEntry}
+              onSave={handleSaveEntry}
+              onDelete={currentEntry ? () => {
+                if (selectedDate instanceof Date) {
+                  handleDeleteEntry(getFormattedDate(selectedDate));
+                }
+              } : undefined}
+              loading={loading}
+            />
+          </EntryContainer>
+        )}
       </CalendarContainer>
     </PageContainer>
   );

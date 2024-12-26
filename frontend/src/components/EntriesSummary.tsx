@@ -7,6 +7,8 @@ const SummaryContainer = styled.div`
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
+  min-height: 100vh;
+  background: #d4e5ff;
 `;
 
 const Header = styled.div`
@@ -18,7 +20,7 @@ const Header = styled.div`
 
 const Button = styled.button`
   padding: 0.5rem 1rem;
-  background: #007bff;
+  background: #7eb3ff;
   color: white;
   border: none;
   border-radius: 4px;
@@ -26,7 +28,15 @@ const Button = styled.button`
   font-size: 1rem;
 
   &:hover {
-    background: #0056b3;
+    background: #6a9fee;
+  }
+
+  &.delete {
+    background: #ff6b6b;
+    
+    &:hover {
+      background: #ff5252;
+    }
   }
 `;
 
@@ -57,7 +67,7 @@ const EntryCard = styled.div`
 
 const DeleteButton = styled.button`
   padding: 0.3rem 0.8rem;
-  background: #dc3545;
+  background: #ff6b6b;
   color: white;
   border: none;
   border-radius: 4px;
@@ -65,11 +75,11 @@ const DeleteButton = styled.button`
   font-size: 0.9rem;
 
   &:hover {
-    background: #c82333;
+    background: #ff5252;
   }
 
   &:disabled {
-    background: #6c757d;
+    background: #ffb5b5;
     cursor: not-allowed;
   }
 `;

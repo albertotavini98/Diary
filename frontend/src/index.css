@@ -5,9 +5,73 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: #d4e5ff;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Add these styles for the confirmation dialog */
+.react-confirm-alert-overlay {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.react-confirm-alert {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+}
+
+.react-confirm-alert-button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.react-confirm-alert-button-group button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.react-confirm-alert-button-group button:first-child {
+  background-color: #ff6b6b;
+  color: white;
+}
+
+.react-confirm-alert-button-group button:last-child {
+  background-color: #7eb3ff;
+  color: white;
+}
+
+.react-confirm-alert-button-group button:hover {
+  background-color: #ff5252;
+}
+
+.react-confirm-alert-button-group button:last-child:hover {
+  background-color: #6a9fee;
+}
+
+/* Login and Signup button styles */
+.auth-button {
+  background-color: #7eb3ff !important;  /* Pastel blue */
+  color: white !important;
+  border: none !important;
+}
+
+.auth-button:hover {
+  background-color: #6a9fee !important;  /* Darker pastel blue */
+}
+
+/* If there are secondary/cancel buttons in the auth forms */
+.auth-button.secondary {
+  background-color: #ff6b6b !important;  /* Pastel red */
+}
+
+.auth-button.secondary:hover {
+  background-color: #ff5252 !important;  /* Darker pastel red */
 }

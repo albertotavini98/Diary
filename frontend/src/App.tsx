@@ -28,14 +28,14 @@ const Form = styled.form`
 
   button {
     padding: 0.5rem;
-    background: #007bff;
+    background: #7eb3ff;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
 
     &:hover {
-      background: #0056b3;
+      background: #6a9fee;
     }
   }
 `;
@@ -89,7 +89,7 @@ const Login: React.FC = () => {
       </Form>
       <p style={{ marginTop: '1rem', textAlign: 'center' }}>
         Don't have an account?{' '}
-        <a href="/signup" style={{ color: '#007bff', textDecoration: 'none' }}>
+        <a href="/signup" style={{ color: '#7eb3ff', textDecoration: 'none' }}>
           Sign up here
         </a>
       </p>
@@ -141,7 +141,7 @@ const Signup: React.FC = () => {
       </Form>
       <p style={{ marginTop: '1rem', textAlign: 'center' }}>
         Already have an account?{' '}
-        <a href="/login" style={{ color: '#007bff', textDecoration: 'none' }}>
+        <a href="/login" style={{ color: '#7eb3ff', textDecoration: 'none' }}>
           Login here
         </a>
       </p>

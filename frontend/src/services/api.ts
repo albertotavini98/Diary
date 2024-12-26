@@ -70,7 +70,12 @@ export const diaryApi = {
   },
   
   deleteEntry: async (date: string) => {
-    return await api.delete(`/entries/${date}`);
+    try {
+      const response = await api.delete(`/entries/${date}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 };
 
